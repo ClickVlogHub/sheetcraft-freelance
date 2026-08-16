@@ -93,7 +93,7 @@
     .service-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
     .service-btn { background: #0f172a; border: 1px solid #334155; color: #cbd5e1; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; text-align: center; }
     .service-btn.active { background: #2563eb; color: #ffffff; border-color: #3b82f6; }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .price-box { background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
     .price-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
     .price-value { font-size: 24px; font-weight: 800; color: #34d399; }
@@ -162,9 +162,30 @@
     .summary-row span:last-child { color: #f8fafc; font-weight: 600; text-align: right; }
     .reset-btn { width: 100%; background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
 
-    /* ============================================================
-       LOGIN / SIGN UP MODAL STYLES
-    ============================================================ */
+    /* Orders History List */
+    .order-history-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .order-history-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .order-history-date {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: normal;
+    }
+
+    /* Modal Backdrop and Card */
     .login-modal-backdrop {
       position: fixed;
       top: 0;
@@ -220,7 +241,6 @@
       justify-content: center;
     }
     
-    /* Tabs inside Login Modal */
     .auth-tabs {
       display: flex;
       background: #0f172a;
@@ -318,7 +338,7 @@
     <div class="nav-links">
       <button class="nav-item active" id="navOrder" onclick="switchNav('order')">New Request</button>
       <button class="nav-item" id="navTrack" onclick="switchNav('track')">My Orders</button>
-      <!-- Login & Profile Slot -->
+      <!-- Login & User Button -->
       <button class="nav-login-btn" id="open-login-btn" onclick="openLoginModal()">Login</button>
       <div id="user-button" style="display: none;"></div>
     </div>
@@ -404,7 +424,7 @@
       <div id="confirmationSection" class="hidden" style="text-align: center;">
         <div class="success-badge">✓</div>
         <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Request Placed!</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully record ho gaya hai.</p>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully browser me save ho gaya hai.</p>
 
         <!-- Live Progress Status -->
         <div class="status-tracker">
@@ -453,9 +473,11 @@
           </div>
         </div>
 
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
-          Freelancer ko alert bhej diya gaya hai. Jald hi aapse WhatsApp/Email par contact kiya jayega.
-        </p>
+        <!-- History of All Orders Placed -->
+        <div style="text-align: left; margin-top: 24px;">
+          <div class="section-title">Your Order History</div>
+          <div id="orderHistoryList"></div>
+        </div>
 
         <button onclick="switchNav('order')" class="reset-btn">Naya Order Create Karein</button>
       </div>
@@ -482,7 +504,7 @@
       </div>
 
       <h2 id="modal-heading" style="font-size: 1.3rem; margin-bottom: 2px;">Welcome Back</h2>
-      <p id="modal-subtext" style="color: #94a3b8; font-size: 12px;">Sign in to your account</p>
+      <p id="modal-subtext" style="color: #94a3b8; font-size: 12px;">Sign in to place and track your orders</p>
 
       <!-- Toggle Login vs Sign-Up -->
       <div class="auth-tabs">
@@ -549,9 +571,12 @@
   ></script>
 
   <script>
-    const MY_PHONE = "7014876449";
     let selectedService = 'excel';
-    let hasActiveOrder = false;
+
+    /* --- AUTH CHECK HELPER --- */
+    function isUserLoggedIn() {
+      return Boolean(window.Clerk && window.Clerk.user);
+    }
 
     /* --- NAVIGATION CONTROLS --- */
     function switchNav(view) {
@@ -563,15 +588,72 @@
         document.getElementById('formSection').classList.remove('hidden');
         document.getElementById('confirmationSection').classList.add('hidden');
       } else if (view === 'track') {
-        document.getElementById('navTrack').classList.add('active');
-        if (hasActiveOrder) {
-          document.getElementById('formSection').classList.add('hidden');
-          document.getElementById('confirmationSection').classList.remove('hidden');
-        } else {
-          alert('Abhi tak koi active order nahi mila! Pehle form fill karke submit karein.');
-          switchNav('order');
+        if (!isUserLoggedIn()) {
+          alert('Orders dekhne ke liye pehle Login / Sign Up karein!');
+          openLoginModal();
+          return;
         }
+
+        const orders = getSavedOrders();
+        if (orders.length === 0) {
+          alert('Abhi tak koi order submit nahi kiya gaya hai.');
+          switchNav('order');
+          return;
+        }
+
+        document.getElementById('navTrack').classList.add('active');
+        document.getElementById('formSection').classList.add('hidden');
+        document.getElementById('confirmationSection').classList.remove('hidden');
+
+        // Populate with latest order
+        populateSummary(orders[orders.length - 1]);
+        renderOrderHistory();
       }
+    }
+
+    /* --- ORDER STORAGE & HISTORY --- */
+    function getSavedOrders() {
+      const userKey = (window.Clerk && window.Clerk.user) ? window.Clerk.user.id : 'guest';
+      return JSON.parse(localStorage.getItem('portal_orders_' + userKey) || '[]');
+    }
+
+    function saveOrder(orderObj) {
+      const userKey = (window.Clerk && window.Clerk.user) ? window.Clerk.user.id : 'guest';
+      const orders = getSavedOrders();
+      orders.push(orderObj);
+      localStorage.setItem('portal_orders_' + userKey, JSON.stringify(orders));
+    }
+
+    function populateSummary(order) {
+      document.getElementById('sumOrderId').innerText = '#' + order.id;
+      document.getElementById('sumName').innerText = order.name;
+      document.getElementById('sumService').innerText = order.service.toUpperCase();
+      document.getElementById('sumComplexity').innerText = order.complexity;
+      document.getElementById('sumTimeline').innerText = order.timeline;
+      document.getElementById('sumTotal').innerText = '₹' + order.total.toLocaleString('en-IN');
+    }
+
+    function renderOrderHistory() {
+      const historyContainer = document.getElementById('orderHistoryList');
+      const orders = getSavedOrders();
+      
+      if (orders.length === 0) {
+        historyContainer.innerHTML = '<p style="color:#64748b; font-size:13px;">Koi previous order record nahi mila.</p>';
+        return;
+      }
+
+      historyContainer.innerHTML = orders.slice().reverse().map(order => `
+        <div class="order-history-card">
+          <div class="order-history-header">
+            <span>#${order.id} - ${order.service.toUpperCase()}</span>
+            <span class="order-history-date">${order.date}</span>
+          </div>
+          <div style="font-size: 13px; color: #cbd5e1; display:flex; justify-content:space-between;">
+            <span>${order.complexity} (${order.timeline})</span>
+            <span style="color:#34d399; font-weight:700;">₹${order.total.toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+      `).join('');
     }
 
     /* --- LOGIN / SIGN-UP MODAL CONTROLS --- */
@@ -659,6 +741,14 @@
           });
         }
         closeLoginModal();
+
+        // Autofill user details in form if empty
+        if (window.Clerk.user.fullName && !document.getElementById('name').value) {
+          document.getElementById('name').value = window.Clerk.user.fullName;
+        }
+        if (window.Clerk.user.primaryEmailAddress && !document.getElementById('email').value) {
+          document.getElementById('email').value = window.Clerk.user.primaryEmailAddress.emailAddress;
+        }
       } else {
         if (loginBtn) loginBtn.style.display = 'inline-block';
         if (userBtnDiv) userBtnDiv.style.display = 'none';
@@ -711,17 +801,22 @@
       return cost;
     }
 
-    /* --- LEAD FORM SUBMIT & WHATSAPP REDIRECT --- */
+    /* --- LEAD FORM SUBMISSION (DIRECT CONFIRMATION) --- */
     document.getElementById('leadForm').addEventListener('submit', function(e) {
       e.preventDefault();
+
+      // Gate: Check if user is logged in before placing order
+      if (!isUserLoggedIn()) {
+        alert('Order submit karne ke liye pehle Login ya Sign Up karein!');
+        openLoginModal();
+        return;
+      }
 
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
       const phone = document.getElementById('phone').value;
       const notes = document.getElementById('notes').value;
       const sheetUrl = document.getElementById('sheetUrl').value;
-      const fileInput = document.getElementById('excelFile');
-      const fileName = fileInput.files[0] ? fileInput.files[0].name : 'Not Attached';
       const total = calcPrice();
       const compSelect = document.getElementById('complexity');
       const complexityText = compSelect.options[compSelect.selectedIndex].text.split(' - ')[0];
@@ -730,31 +825,36 @@
       
       const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
 
-      // Summary display update
-      document.getElementById('sumOrderId').innerText = '#' + orderId;
-      document.getElementById('sumName').innerText = name;
-      document.getElementById('sumService').innerText = selectedService.toUpperCase();
-      document.getElementById('sumComplexity').innerText = complexityText;
-      document.getElementById('sumTimeline').innerText = deliveryText;
-      document.getElementById('sumTotal').innerText = '₹' + total.toLocaleString('en-IN');
+      const newOrder = {
+        id: orderId,
+        name: name,
+        email: email,
+        phone: phone,
+        service: selectedService,
+        complexity: complexityText,
+        timeline: deliveryText,
+        notes: notes,
+        sheetUrl: sheetUrl,
+        total: total,
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
 
-      hasActiveOrder = true;
-      switchNav('track');
+      // Save order to browser storage
+      saveOrder(newOrder);
 
-      // WhatsApp message formatting
-      let alertMsg = `*🔔 NEW ORDER ON WEBSITE (#${orderId})*\n\n`;
-      alertMsg += `*Client:* ${name}\n`;
-      alertMsg += `*Phone:* ${phone}\n`;
-      alertMsg += `*Email:* ${email}\n`;
-      alertMsg += `*Service:* ${selectedService.toUpperCase()}\n`;
-      alertMsg += `*Scope:* ${complexityText}\n`;
-      alertMsg += `*Timeline:* ${deliveryText}\n`;
-      if (sheetUrl) alertMsg += `*Sheet Link:* ${sheetUrl}\n`;
-      if (fileName !== 'Not Attached') alertMsg += `*File Uploaded:* ${fileName}\n`;
-      alertMsg += `*Work Details:* ${notes}\n\n`;
-      alertMsg += `*💰 Estimated Amount:* ₹${total}`;
+      // Display directly on page without external redirection
+      populateSummary(newOrder);
+      renderOrderHistory();
 
-      window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(alertMsg), "_blank");
+      document.getElementById('navOrder').classList.remove('active');
+      document.getElementById('navTrack').classList.add('active');
+      document.getElementById('formSection').classList.add('hidden');
+      document.getElementById('confirmationSection').classList.remove('hidden');
+
+      // Reset form fields for subsequent requests
+      document.getElementById('notes').value = '';
+      document.getElementById('sheetUrl').value = '';
+      document.getElementById('excelFile').value = '';
     });
 
     calcPrice();
