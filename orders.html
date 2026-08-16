@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Orders | Click Vlog Hub</title>
+  <!-- Wahi CSS file link karein jo index.html mein hai -->
+  <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+  <!-- Navigation bar (Yahi navbar index.html mein bhi copy karein) -->
+  <nav>
+    <div class="logo"><a href="index.html"><img src="logo.png"></a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="orders.html">My Orders</a></li>
+      <div id="user-button"></div>
+    </ul>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <section id="order-dashboard" style="padding: 50px 20px; max-width: 900px; margin: auto;">
+    <h2 style="text-align: center; margin-bottom: 30px;">My Orders</h2>
+    <table style="width: 100%; border-collapse: collapse; color: #fff;">
+      <thead>
+        <tr style="border-bottom: 2px solid #334155;">
+          <th style="padding: 15px;">Order ID</th>
+          <th style="padding: 15px;">Product</th>
+          <th style="padding: 15px;">Status</th>
+        </tr>
+      </thead>
+      <tbody id="orders-body">
+        <!-- Yahan data JS se aayega -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Wahi JS file link karein -->
+  <script src="script.js"></script>
+</body>
+</html>
