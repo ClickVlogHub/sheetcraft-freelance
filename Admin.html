@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Live Orders</title>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #0b1120; color: #f8fafc; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid #334155; }
+    .header h1 { font-size: 22px; color: #38bdf8; }
+    .badge { background: #2563eb; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+    .order-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 18px; position: relative; }
+    .order-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .order-id { font-weight: 800; color: #38bdf8; font-size: 15px; }
+    .order-price { color: #34d399; font-weight: 800; font-size: 16px; }
+    .detail-row { font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
+    .detail-row span { color: #ffffff; font-weight: 600; }
+    .notes-box { background: #0f172a; border-radius: 8px; padding: 10px; font-size: 12px; color: #cbd5e1; margin-top: 10px; border: 1px solid #334155; }
+    .status-select { margin-top: 12px; width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; outline: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Spreadsheet Pro - Admin Orders</h1>
+      <span class="badge" id="orderCount">0 Orders</span>
+    </div>
+    <div class="orders-grid" id="ordersContainer">
+      <p style="color:#94a3b8;">Listening for live orders from Firebase...</p>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBl4tfbtxDb7CwwdtuI3mieIJcLEnNMLC0",
+      authDomain: "spreadsheet-pro-a2490.firebaseapp.com",
+      projectId: "spreadsheet-pro-a2490",
+      storageBucket: "spreadsheet-pro-a2490.firebasestorage.app",
+      messagingSenderId: "56838219579",
+      appId: "1:56838219579:web:557ef4036ae8023edfb91e",
+      measurementId: "G-KLVCEZDYSX"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Realtime Database Listener
+    db.collection("orders").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+      const container = document.getElementById('ordersContainer');
+      document.getElementById('orderCount').innerText = snapshot.size + " Orders";
+
+      if (snapshot.empty) {
+        container.innerHTML = '<p style="color:#94a3b8;">Abhi tak koi order nahi aaya hai.</p>';
+        return;
+      }
+
+      let html = '';
+      snapshot.forEach(doc => {
+        const o = doc.data();
+        html += `
+          <div class="order-card">
+            <div class="order-header">
+              <span class="order-id">#${o.id}</span>
+              <span class="order-price">₹${o.total}</span>
+            </div>
+            <div class="detail-row">Client: <span>${o.name}</span></div>
+            <div class="detail-row">Phone: <span><a href="https://wa.me/91${o.phone}" target="_blank" style="color:#38bdf8; text-decoration:none;">${o.phone} 💬</a></span></div>
+            <div class="detail-row">Email: <span>${o.email}</span></div>
+            <div class="detail-row">Service: <span>${o.service.toUpperCase()} (${o.complexity})</span></div>
+            <div class="detail-row">Timeline: <span>${o.timeline}</span></div>
+            ${o.sheetUrl ? `<div class="detail-row">Sheet: <a href="${o.sheetUrl}" target="_blank" style="color:#38bdf8;">Open Link 🔗</a></div>` : ''}
+            <div class="notes-box"><b>Work Instructions:</b><br>${o.notes}</div>
+            
+            <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
+              <option value="Received" ${o.status === 'Received' ? 'selected' : ''}>Received</option>
+              <option value="Reviewing" ${o.status === 'Reviewing' ? 'selected' : ''}>Reviewing</option>
+              <option value="In Progress" ${o.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    });
+
+    async function updateStatus(orderId, newStatus) {
+      await db.collection("orders").doc(orderId).update({ status: newStatus });
+    }
+  </script>
+</body>
+</html>
+
