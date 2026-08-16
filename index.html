@@ -6,8 +6,63 @@
   <title>Spreadsheet Freelance Portal</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #0b1120; color: #f8fafc; padding: 24px 16px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-    .card { background: #1e293b; width: 100%; max-width: 600px; border-radius: 20px; border: 1px solid #334155; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    body { background-color: #0b1120; color: #f8fafc; padding: 0 0 40px 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    
+    /* Top Navigation Bar */
+    .navbar {
+      width: 100%;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-size: 17px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 12px;
+    }
+    .nav-item {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .nav-item:hover {
+      color: #f8fafc;
+      background: #1e293b;
+    }
+    .nav-item.active {
+      background: #1e293b;
+      color: #38bdf8;
+      border-color: #334155;
+    }
+
+    /* Container Card */
+    .main-container {
+      width: 100%;
+      max-width: 650px;
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .card { background: #1e293b; width: 100%; border-radius: 20px; border: 1px solid #334155; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
     .header { text-align: center; margin-bottom: 24px; }
     .header h1 { font-size: 24px; font-weight: 800; color: #ffffff; }
     .header p { color: #94a3b8; font-size: 14px; margin-top: 6px; }
@@ -26,141 +81,253 @@
     .submit-btn { width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: background 0.2s; }
     .submit-btn:active { background: #1d4ed8; }
 
+    /* Order Tracker Visual Bar */
+    .status-tracker {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 20px 0 25px;
+    }
+    .status-tracker::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 15px;
+      right: 15px;
+      height: 2px;
+      background: #334155;
+      z-index: 1;
+    }
+    .step-item {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 2px solid #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .step-item.active .step-dot {
+      background: #2563eb;
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .step-label {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .step-item.active .step-label {
+      color: #f8fafc;
+    }
+
     /* Success / Summary Dashboard Screen */
-    .success-badge { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 28px; border-radius: 50%; margin-bottom: 16px; }
-    .summary-card { background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 18px; margin: 20px 0; text-align: left; }
+    .success-badge { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 28px; border-radius: 50%; margin-bottom: 12px; }
+    .summary-card { background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 18px; margin: 16px 0; text-align: left; }
     .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
     .summary-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .summary-row span:first-child { color: #94a3b8; }
     .summary-row span:last-child { color: #f8fafc; font-weight: 600; text-align: right; }
     .reset-btn { width: 100%; background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
-    
-    @media(max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    @media(max-width: 480px) { 
+      .grid-2 { grid-template-columns: 1fr; }
+      .navbar { padding: 12px 16px; }
+      .step-label { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    
-    <!-- 1. Booking Form Section -->
-    <div id="formSection">
-      <div class="header">
-        <h1>📊 Spreadsheet Consultant</h1>
-        <p>Excel & Google Sheets Freelance Services</p>
+  <!-- Top Navigation Header -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span>📊</span>
+      <span>Spreadsheet Pro</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-item active" id="navOrder" onclick="switchNav('order')">New Request</button>
+      <button class="nav-item" id="navTrack" onclick="switchNav('track')">My Orders</button>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="card">
+      
+      <!-- 1. Booking Form Section -->
+      <div id="formSection">
+        <div class="header">
+          <h1>📊 Spreadsheet Consultant</h1>
+          <p>Excel & Google Sheets Freelance Services</p>
+        </div>
+
+        <form id="leadForm">
+          <!-- Contact Info -->
+          <div class="section-title">1. Your Details</div>
+          <div class="grid-3">
+            <input required type="text" id="name" placeholder="Aapka Naam">
+            <input required type="email" id="email" placeholder="Email Address">
+            <input required type="tel" id="phone" placeholder="WhatsApp Number">
+          </div>
+
+          <!-- Service Selection -->
+          <div class="section-title">2. Service Required</div>
+          <div class="service-btn-group">
+            <div class="service-btn active" id="btn-excel" onclick="setService('excel')">📊 Excel</div>
+            <div class="service-btn" id="btn-sheets" onclick="setService('sheets')">📑 Sheets</div>
+            <div class="service-btn" id="btn-both" onclick="setService('both')">⚡ Both</div>
+          </div>
+
+          <!-- File & Link Input -->
+          <div id="excelSection" style="margin-bottom: 18px;">
+            <div class="section-title">3. Attach Excel File</div>
+            <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
+          </div>
+
+          <div id="sheetsSection" class="hidden" style="margin-bottom: 18px;">
+            <div class="section-title">3. Google Sheets Share URL</div>
+            <input type="url" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+          </div>
+
+          <!-- Complexity & Delivery -->
+          <div class="grid-2">
+            <div>
+              <div class="section-title">4. Task Complexity</div>
+              <select id="complexity" onchange="calcPrice()">
+                <option value="500">Basic (Cleaning / Formatting) - ₹500</option>
+                <option value="1200" selected>Medium (Formulas, Pivot, Dashboard) - ₹1,200</option>
+                <option value="2500">Advanced (Macros, VBA, Automation) - ₹2,500</option>
+              </select>
+            </div>
+            <div>
+              <div class="section-title">5. Delivery Timeline</div>
+              <select id="delivery" onchange="calcPrice()">
+                <option value="0" selected>Standard (2-3 Days)</option>
+                <option value="500">Express (24 Hours) +₹500</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div style="margin-bottom: 16px;">
+            <div class="section-title">6. Work Instructions</div>
+            <textarea required id="notes" rows="3" placeholder="Sheet me kya changes ya formula setup karwana hai..."></textarea>
+          </div>
+
+          <!-- Price Output -->
+          <div class="price-box">
+            <div>
+              <div class="price-label">Estimated Price</div>
+              <div class="price-value" id="priceDisplay">₹1,200</div>
+            </div>
+            <div style="font-size: 11px; color: #64748b; text-align: right;">Instant Web<br>Confirmation</div>
+          </div>
+
+          <button type="submit" class="submit-btn">Confirm & Submit Request</button>
+        </form>
       </div>
 
-      <form id="leadForm">
-        <!-- Contact Info -->
-        <div class="section-title">1. Your Details</div>
-        <div class="grid-3">
-          <input required type="text" id="name" placeholder="Aapka Naam">
-          <input required type="email" id="email" placeholder="Email Address">
-          <input required type="tel" id="phone" placeholder="WhatsApp Number">
-        </div>
+      <!-- 2. Order Confirmation & Tracking Dashboard -->
+      <div id="confirmationSection" class="hidden" style="text-align: center;">
+        <div class="success-badge">✓</div>
+        <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Request Placed!</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully record ho gaya hai.</p>
 
-        <!-- Service Selection -->
-        <div class="section-title">2. Service Required</div>
-        <div class="service-btn-group">
-          <div class="service-btn active" id="btn-excel" onclick="setService('excel')">📊 Excel</div>
-          <div class="service-btn" id="btn-sheets" onclick="setService('sheets')">📑 Sheets</div>
-          <div class="service-btn" id="btn-both" onclick="setService('both')">⚡ Both</div>
-        </div>
-
-        <!-- File & Link Input -->
-        <div id="excelSection" style="margin-bottom: 18px;">
-          <div class="section-title">3. Attach Excel File</div>
-          <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
-        </div>
-
-        <div id="sheetsSection" class="hidden" style="margin-bottom: 18px;">
-          <div class="section-title">3. Google Sheets Share URL</div>
-          <input type="url" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
-        </div>
-
-        <!-- Complexity & Delivery -->
-        <div class="grid-2">
-          <div>
-            <div class="section-title">4. Task Complexity</div>
-            <select id="complexity" onchange="calcPrice()">
-              <option value="500">Basic (Cleaning / Formatting) - ₹500</option>
-              <option value="1200" selected>Medium (Formulas, Pivot, Dashboard) - ₹1,200</option>
-              <option value="2500">Advanced (Macros, VBA, Automation) - ₹2,500</option>
-            </select>
+        <!-- Live Progress Status -->
+        <div class="status-tracker">
+          <div class="step-item active">
+            <div class="step-dot">1</div>
+            <div class="step-label">Received</div>
           </div>
-          <div>
-            <div class="section-title">5. Delivery Timeline</div>
-            <select id="delivery" onchange="calcPrice()">
-              <option value="0" selected>Standard (2-3 Days)</option>
-              <option value="500">Express (24 Hours) +₹500</option>
-            </select>
+          <div class="step-item active">
+            <div class="step-dot">2</div>
+            <div class="step-label">Reviewing</div>
+          </div>
+          <div class="step-item">
+            <div class="step-dot">3</div>
+            <div class="step-label">In Progress</div>
+          </div>
+          <div class="step-item">
+            <div class="step-dot">4</div>
+            <div class="step-label">Completed</div>
           </div>
         </div>
 
-        <!-- Description -->
-        <div style="margin-bottom: 16px;">
-          <div class="section-title">6. Work Instructions</div>
-          <textarea required id="notes" rows="3" placeholder="Sheet me kya changes ya formula setup karwana hai..."></textarea>
-        </div>
-
-        <!-- Price Output -->
-        <div class="price-box">
-          <div>
-            <div class="price-label">Estimated Price</div>
-            <div class="price-value" id="priceDisplay">₹1,200</div>
+        <div class="summary-card">
+          <div class="summary-row">
+            <span>Order Reference ID</span>
+            <span id="sumOrderId" style="color: #38bdf8;">#ORD-9821</span>
           </div>
-          <div style="font-size: 11px; color: #64748b; text-align: right;">Instant Web<br>Confirmation</div>
+          <div class="summary-row">
+            <span>Client Name</span>
+            <span id="sumName">-</span>
+          </div>
+          <div class="summary-row">
+            <span>Service Platform</span>
+            <span id="sumService">-</span>
+          </div>
+          <div class="summary-row">
+            <span>Work Complexity</span>
+            <span id="sumComplexity">-</span>
+          </div>
+          <div class="summary-row">
+            <span>Timeline</span>
+            <span id="sumTimeline">-</span>
+          </div>
+          <div class="summary-row">
+            <span>Estimated Total</span>
+            <span id="sumTotal" style="color: #34d399; font-size: 16px;">-</span>
+          </div>
         </div>
 
-        <button type="submit" class="submit-btn">Confirm & Submit Request</button>
-      </form>
-    </div>
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
+          Freelancer ko alert bhej diya gaya hai. Jald hi aapse WhatsApp/Email par contact kiya jayega.
+        </p>
 
-    <!-- 2. On-Page Client Summary Dashboard -->
-    <div id="confirmationSection" class="hidden" style="text-align: center;">
-      <div class="success-badge">✓</div>
-      <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Request Placed!</h2>
-      <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully website par record ho gaya hai.</p>
-
-      <div class="summary-card">
-        <div class="summary-row">
-          <span>Order Reference ID</span>
-          <span id="sumOrderId" style="color: #38bdf8;">#ORD-9821</span>
-        </div>
-        <div class="summary-row">
-          <span>Client Name</span>
-          <span id="sumName">-</span>
-        </div>
-        <div class="summary-row">
-          <span>Service Platform</span>
-          <span id="sumService">-</span>
-        </div>
-        <div class="summary-row">
-          <span>Work Complexity</span>
-          <span id="sumComplexity">-</span>
-        </div>
-        <div class="summary-row">
-          <span>Timeline</span>
-          <span id="sumTimeline">-</span>
-        </div>
-        <div class="summary-row">
-          <span>Estimated Total</span>
-          <span id="sumTotal" style="color: #34d399; font-size: 16px;">-</span>
-        </div>
+        <button onclick="switchNav('order')" class="reset-btn">Naya Order Create Karein</button>
       </div>
 
-      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
-        Freelancer ko alert bhej diya gaya hai. Jald hi aapse WhatsApp/Email par contact kiya jayega.
-      </p>
-
-      <button onclick="window.location.reload()" class="reset-btn">Naya Order Create Karein</button>
     </div>
-
   </div>
 
   <script>
     // APNA 10-DIGIT WHATSAPP NUMBER YAHAN DALEIN (Country code 91 ke sath)
     const MY_PHONE = "919876543210";
     let selectedService = 'excel';
+    let hasActiveOrder = false;
+
+    function switchNav(view) {
+      document.getElementById('navOrder').classList.remove('active');
+      document.getElementById('navTrack').classList.remove('active');
+
+      if (view === 'order') {
+        document.getElementById('navOrder').classList.add('active');
+        document.getElementById('formSection').classList.remove('hidden');
+        document.getElementById('confirmationSection').classList.add('hidden');
+      } else if (view === 'track') {
+        document.getElementById('navTrack').classList.add('active');
+        if (hasActiveOrder) {
+          document.getElementById('formSection').classList.add('hidden');
+          document.getElementById('confirmationSection').classList.remove('hidden');
+        } else {
+          alert('Abhi tak koi active order nahi mila! Pehle form fill karke submit karein.');
+          switchNav('order');
+        }
+      }
+    }
 
     function setService(type) {
       selectedService = type;
@@ -209,7 +376,7 @@
       
       const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
 
-      // 1. Client ko website par Dashboard / Receipt view dikhayein
+      // Receipt data update
       document.getElementById('sumOrderId').innerText = '#' + orderId;
       document.getElementById('sumName').innerText = name;
       document.getElementById('sumService').innerText = selectedService.toUpperCase();
@@ -217,10 +384,10 @@
       document.getElementById('sumTimeline').innerText = deliveryText;
       document.getElementById('sumTotal').innerText = '₹' + total.toLocaleString('en-IN');
 
-      document.getElementById('formSection').classList.add('hidden');
-      document.getElementById('confirmationSection').classList.remove('hidden');
+      hasActiveOrder = true;
+      switchNav('track');
 
-      // 2. Freelancer (Aapke) WhatsApp par alert notification trigger
+      // WhatsApp alert message
       let alertMsg = `*🔔 NEW ORDER ON WEBSITE (#${orderId})*\n\n`;
       alertMsg += `*Client:* ${name}\n`;
       alertMsg += `*Phone:* ${phone}\n`;
@@ -233,7 +400,6 @@
       alertMsg += `*Work Details:* ${notes}\n\n`;
       alertMsg += `*💰 Estimated Amount:* ₹${total}`;
 
-      // Background notification open
       window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(alertMsg), "_blank");
     });
 
