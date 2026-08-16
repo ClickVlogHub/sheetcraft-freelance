@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Access - Login & Sign Up</title>
+  
+  <!-- Lottie Animation Script -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+
+    .animation-box {
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .auth-subtitle {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    /* Tab Switcher */
+    .tab-container {
+      display: flex;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    /* Input Fields */
+    .input-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #38bdf8;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #334155;
+    }
+
+    .divider span {
+      padding: 0 10px;
+    }
+
+    /* Social Auth Buttons */
+    .social-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .social-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s;
+    }
+
+    .social-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-google { background: #ffffff; color: #1e293b; }
+    .btn-facebook { background: #1877f2; color: #ffffff; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+    
+    <!-- 3D Animated Avatar -->
+    <div class="animation-box">
+      <lottie-player 
+        src="https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json" 
+        background="transparent" 
+        speed="1" 
+        autoplay 
+        loop
+        style="width: 130px; height: 130px;">
+      </lottie-player>
+    </div>
+
+    <div class="auth-title" id="form-heading">Welcome Back</div>
+    <div class="auth-subtitle" id="form-subheading">Sign in to your account</div>
+
+    <!-- Toggle Tabs -->
+    <div class="tab-container">
+      <button class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
+      <button class="tab-btn" id="tab-signup" onclick="toggleAuth('signup')">Sign Up</button>
+    </div>
+
+    <!-- 1. Login Form -->
+    <form id="login-form" onsubmit="handleEmailAuth(event, 'login')">
+      <div class="input-group">
+        <input type="email" placeholder="Email Address" required />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Password" required />
+      </div>
+      <button type="submit" class="action-btn">Sign In</button>
+    </form>
+
+    <!-- 2. Sign Up Form -->
+    <form id="signup-form" class="hidden" onsubmit="handleEmailAuth(event, 'signup')">
+      <div class="input-group">
+        <input type="text" placeholder="Full Name" required />
+      </div>
+      <div class="input-group">
+        <input type="email" placeholder="Email Address" required />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Create Password" required />
+      </div>
+      <button type="submit" class="action-btn">Create Account</button>
+    </form>
+
+    <div class="divider">
+      <span>OR</span>
+    </div>
+
+    <!-- Social Sign In / Sign Up -->
+    <div class="social-group">
+      <button class="social-btn btn-google" onclick="triggerOAuth('google')">
+        <svg style="width:18px;height:18px;" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <button class="social-btn btn-facebook" onclick="triggerOAuth('facebook')">
+        <svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="#ffffff">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        Continue with Facebook
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Clerk Auth SDK -->
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_ZGVmaW5pdGUtcXVhZ2dhLTQ4NDkuY2xlcmsuYWNjb3VudHMuZGV2JA"
+    src="https://definite-quagga-4849.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
+  <script>
+    function toggleAuth(mode) {
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const tabLogin = document.getElementById('tab-login');
+      const tabSignup = document.getElementById('tab-signup');
+      const heading = document.getElementById('form-heading');
+      const subheading = document.getElementById('form-subheading');
+
+      if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabSignup.classList.remove('active');
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        heading.innerText = 'Welcome Back';
+        subheading.innerText = 'Sign in to your account';
+      } else {
+        tabSignup.classList.add('active');
+        tabLogin.classList.remove('active');
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        heading.innerText = 'Create Account';
+        subheading.innerText = 'Register for freelance access';
+      }
+    }
+
+    async function triggerOAuth(provider) {
+      if (!window.Clerk) {
+        alert('Authentication service load ho rahi hai...');
+        return;
+      }
+      try {
+        await window.Clerk.client.signIn.authenticateWithRedirect({
+          strategy: `oauth_${provider}`,
+          redirectUrl: window.location.href,
+          redirectUrlComplete: window.location.href,
+        });
+      } catch (e) {
+        window.Clerk.openSignIn();
+      }
+    }
+
+    function handleEmailAuth(event, type) {
+      event.preventDefault();
+      if (window.Clerk) {
+        if (type === 'login') {
+          window.Clerk.openSignIn();
+        } else {
+          window.Clerk.openSignUp();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
