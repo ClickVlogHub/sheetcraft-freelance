@@ -150,6 +150,7 @@
       font-size: 11px;
       font-weight: 700;
       color: #94a3b8;
+      transition: all 0.3s ease;
     }
     .step-item.active .step-dot {
       background: #2563eb;
@@ -157,12 +158,18 @@
       color: #ffffff;
       box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
+    .step-item.completed .step-dot {
+      background: #059669;
+      border-color: #34d399;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
+    }
     .step-label {
       font-size: 11px;
       color: #94a3b8;
       font-weight: 600;
     }
-    .step-item.active .step-label {
+    .step-item.active .step-label, .step-item.completed .step-label {
       color: #f8fafc;
     }
 
@@ -199,7 +206,7 @@
     }
 
     /* Modal Backdrop */
-    .login-modal-backdrop {
+    .modal-backdrop {
       position: fixed;
       top: 0;
       left: 0;
@@ -214,16 +221,16 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
-    .login-modal-backdrop.active {
+    .modal-backdrop.active {
       display: flex;
       opacity: 1;
     }
-    .login-modal-card {
+    .modal-card {
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 20px;
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
       padding: 28px 24px;
       text-align: center;
       position: relative;
@@ -231,7 +238,7 @@
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
-    .login-modal-backdrop.active .login-modal-card {
+    .modal-backdrop.active .modal-card {
       transform: scale(1);
     }
     .close-modal-btn {
@@ -245,6 +252,7 @@
       cursor: pointer;
     }
     .close-modal-btn:hover { color: #f8fafc; }
+    
     .animation-box {
       width: 110px;
       height: 110px;
@@ -332,6 +340,35 @@
     .social-btn:hover { transform: translateY(-2px); }
     .btn-google { background: #ffffff; color: #1e293b; }
     .btn-facebook { background: #1877f2; color: #ffffff; }
+
+    /* Payment QR Box Styles */
+    .qr-container {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 12px;
+      display: inline-block;
+      margin: 12px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .qr-container img {
+      width: 180px;
+      height: 180px;
+      display: block;
+    }
+    .pay-btn-mobile {
+      display: inline-block;
+      width: 100%;
+      background: #10b981;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: background 0.2s;
+    }
+    .pay-btn-mobile:hover { background: #059669; }
 
     @media(max-width: 480px) { 
       .grid-2 { grid-template-columns: 1fr; }
@@ -430,37 +467,41 @@
               <div class="price-label">Estimated Price</div>
               <div class="price-value" id="priceDisplay">₹1,200</div>
             </div>
-            <div style="font-size: 11px; color: #64748b; text-align: right;">Instant Web<br>Confirmation</div>
+            <div style="font-size: 11px; color: #64748b; text-align: right;">UPI Secured<br>Direct Order</div>
           </div>
 
-          <button type="submit" class="submit-btn" id="submitBtnText">Confirm & Submit Request</button>
+          <button type="submit" class="submit-btn" id="submitBtnText">Proceed to UPI Payment</button>
         </form>
       </div>
 
       <!-- 2. Order Confirmation & Tracking Dashboard -->
       <div id="confirmationSection" class="hidden" style="text-align: center;">
         <div class="success-badge">✓</div>
-        <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Request Placed!</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully Google Sheet me record ho gaya hai.</p>
+        <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Placed Successfully!</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order Google Sheet me record ho chuka hai.</p>
 
-        <!-- Live Progress Status -->
-        <div class="status-tracker">
-          <div class="step-item active">
+        <!-- Live Dynamic Progress Status Tracker -->
+        <div class="status-tracker" id="liveStatusTracker">
+          <div class="step-item active" id="step-received">
             <div class="step-dot">1</div>
             <div class="step-label">Received</div>
           </div>
-          <div class="step-item active">
+          <div class="step-item" id="step-reviewing">
             <div class="step-dot">2</div>
             <div class="step-label">Reviewing</div>
           </div>
-          <div class="step-item">
+          <div class="step-item" id="step-in-progress">
             <div class="step-dot">3</div>
             <div class="step-label">In Progress</div>
           </div>
-          <div class="step-item">
+          <div class="step-item" id="step-completed">
             <div class="step-dot">4</div>
             <div class="step-label">Completed</div>
           </div>
+        </div>
+
+        <div style="text-align: right; margin-top: -15px; margin-bottom: 15px;">
+          <button onclick="refreshCurrentStatus()" style="background:transparent; border:none; color:#38bdf8; font-size:12px; cursor:pointer;">🔄 Refresh Live Status</button>
         </div>
 
         <div class="summary-card">
@@ -475,6 +516,10 @@
           <div class="summary-row">
             <span>Service Platform</span>
             <span id="sumService">-</span>
+          </div>
+          <div class="summary-row">
+            <span>Payment Status</span>
+            <span id="sumPaymentStatus" style="color: #34d399;">UTR Submitted</span>
           </div>
           <div class="summary-row">
             <span>Work Complexity</span>
@@ -502,9 +547,39 @@
     </div>
   </div>
 
-  <!-- Animated Login Modal -->
-  <div class="login-modal-backdrop" id="login-modal">
-    <div class="login-modal-card">
+  <!-- 3. UPI PAYMENT MODAL (Step-2 Before Sheet Entry) -->
+  <div class="modal-backdrop" id="payment-modal">
+    <div class="modal-card">
+      <button class="close-modal-btn" onclick="closePaymentModal()">&times;</button>
+      
+      <h2 style="font-size: 1.3rem; margin-bottom: 2px;">Scan & Pay via UPI</h2>
+      <p style="color: #94a3b8; font-size: 12px;">Payment complete karke 12-digit Ref/UTR dalein</p>
+
+      <!-- Dynamic UPI QR -->
+      <div class="qr-container">
+        <img id="dynamicUpiQr" src="" alt="UPI QR Code">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <span style="font-size: 13px; color: #94a3b8;">Total Payable: </span>
+        <strong id="modalPayableAmount" style="color: #34d399; font-size: 18px;">₹1,200</strong>
+      </div>
+
+      <!-- Mobile One-Tap Pay Link -->
+      <a id="mobileUpiLink" href="#" class="pay-btn-mobile">📲 Pay via GPay / PhonePe / Paytm</a>
+
+      <form id="paymentConfirmForm" onsubmit="handlePaymentVerification(event)">
+        <div class="auth-input-group">
+          <input type="text" id="utrNumber" placeholder="Enter 12-Digit UPI Ref / UTR No." required minlength="6" maxlength="16">
+        </div>
+        <button type="submit" class="submit-btn" id="confirmOrderBtn" style="margin-top: 6px;">Submit & Confirm Order</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Animated Login Modal -->
+  <div class="modal-backdrop" id="login-modal">
+    <div class="modal-card">
       <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
       
       <div class="animation-box">
@@ -584,7 +659,14 @@
 
   <script>
     let selectedService = 'excel';
+    let pendingOrderData = null; // Holds order temporary until payment confirmation
     
+    // --- UPI CONFIGURATION (Apna UPI ID yahan dalein) ---
+    const UPI_CONFIG = {
+      vpa: "yourname@oksbi",              // <-- Replace with your real UPI ID
+      payeeName: "Spreadsheet Consultant" // <-- Name shown on UPI apps
+    };
+
     // --- GOOGLE SHEET CONFIGURATION ---
     const SHEET_ID = "1cpZVywosuMHP_AIbXmgLlGEa-vT-XIauwe5I3cH8fvI";
     const SHEET_API_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
@@ -657,8 +739,10 @@
         document.getElementById('formSection').classList.add('hidden');
         document.getElementById('confirmationSection').classList.remove('hidden');
 
-        populateSummary(orders[orders.length - 1]);
+        const latestOrder = orders[orders.length - 1];
+        populateSummary(latestOrder);
         renderOrderHistory();
+        fetchLiveSheetStatus(latestOrder.id);
       }
     }
 
@@ -682,6 +766,7 @@
       document.getElementById('sumComplexity').innerText = order.complexity;
       document.getElementById('sumTimeline').innerText = order.timeline;
       document.getElementById('sumTotal').innerText = '₹' + order.total.toLocaleString('en-IN');
+      if (order.status) updateTrackerUI(order.status);
     }
 
     function renderOrderHistory() {
@@ -705,6 +790,121 @@
           </div>
         </div>
       `).join('');
+    }
+
+    /* --- LIVE STATUS TRACKER UI UPDATER --- */
+    function updateTrackerUI(status) {
+      const steps = [
+        { id: 'step-received', name: 'Received' },
+        { id: 'step-reviewing', name: 'Reviewing' },
+        { id: 'step-in-progress', name: 'In Progress' },
+        { id: 'step-completed', name: 'Completed' }
+      ];
+
+      const statusMap = {
+        'received': 0,
+        'reviewing': 1,
+        'in progress': 2,
+        'completed': 3
+      };
+
+      const activeIdx = statusMap[(status || '').toLowerCase()] !== undefined ? statusMap[status.toLowerCase()] : 0;
+
+      steps.forEach((step, idx) => {
+        const el = document.getElementById(step.id);
+        if (!el) return;
+        el.classList.remove('active', 'completed');
+        if (idx < activeIdx) {
+          el.classList.add('completed');
+        } else if (idx === activeIdx) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    function fetchLiveSheetStatus(orderId) {
+      fetch(`${APPS_SCRIPT_URL}?orderId=${encodeURIComponent(orderId)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.status) {
+            updateTrackerUI(data.status);
+          }
+        })
+        .catch(err => console.log("Status fetch note:", err));
+    }
+
+    function refreshCurrentStatus() {
+      const orders = getSavedOrders();
+      if (orders.length > 0) {
+        fetchLiveSheetStatus(orders[orders.length - 1].id);
+      }
+    }
+
+    /* --- PAYMENT MODAL & UPI LOGIC --- */
+    function openPaymentModal(order) {
+      pendingOrderData = order;
+      
+      const upiUrl = `upi://pay?pa=${UPI_CONFIG.vpa}&pn=${encodeURIComponent(UPI_CONFIG.payeeName)}&am=${order.total}&tn=${encodeURIComponent('Order ' + order.id)}&cu=INR`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+
+      document.getElementById('dynamicUpiQr').src = qrApiUrl;
+      document.getElementById('modalPayableAmount').innerText = "₹" + order.total.toLocaleString('en-IN');
+      document.getElementById('mobileUpiLink').href = upiUrl;
+      document.getElementById('utrNumber').value = '';
+
+      document.getElementById('payment-modal').classList.add('active');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('payment-modal').classList.remove('active');
+    }
+
+    function handlePaymentVerification(e) {
+      e.preventDefault();
+      const utr = document.getElementById('utrNumber').value.trim();
+
+      if (!utr) {
+        alert('Kripya valid UPI Reference / UTR Number enter karein!');
+        return;
+      }
+
+      const confirmBtn = document.getElementById('confirmOrderBtn');
+      confirmBtn.innerText = "Transmitting to Sheet...";
+      confirmBtn.disabled = true;
+
+      // Attach UTR and initial status
+      pendingOrderData.utr = utr;
+      pendingOrderData.status = "Received";
+
+      // Send to Google Apps Script
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pendingOrderData)
+      }).then(() => {
+        console.log("Order recorded in sheet.");
+      }).catch(err => {
+        console.error("Transmission error:", err);
+      }).finally(() => {
+        confirmBtn.innerText = "Submit & Confirm Order";
+        confirmBtn.disabled = false;
+        closePaymentModal();
+
+        // Save order locally and switch to tracking dashboard
+        saveOrder(pendingOrderData);
+        populateSummary(pendingOrderData);
+        renderOrderHistory();
+
+        document.getElementById('navOrder').classList.remove('active');
+        document.getElementById('navTrack').classList.add('active');
+        document.getElementById('formSection').classList.add('hidden');
+        document.getElementById('confirmationSection').classList.remove('hidden');
+
+        document.getElementById('notes').value = '';
+        document.getElementById('sheetUrl').value = '';
+        document.getElementById('excelFile').value = '';
+      });
     }
 
     /* --- LOGIN / SIGN-UP MODAL CONTROLS --- */
@@ -851,7 +1051,7 @@
       return cost;
     }
 
-    /* --- LEAD FORM SUBMISSION (SEND TO GOOGLE SHEETS) --- */
+    /* --- LEAD FORM SUBMISSION (TRIGGER PAYMENT QR) --- */
     document.getElementById('leadForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -860,11 +1060,6 @@
         openLoginModal();
         return;
       }
-
-      const submitBtn = document.getElementById('submitBtnText');
-      const originalText = submitBtn.innerText;
-      submitBtn.innerText = "Submitting Order...";
-      submitBtn.disabled = true;
 
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
@@ -879,7 +1074,7 @@
       
       const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
 
-      const newOrder = {
+      const orderData = {
         id: orderId,
         name: name,
         email: email,
@@ -893,34 +1088,8 @@
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       };
 
-      // 1. Send Order directly to Google Sheets via Apps Script
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newOrder)
-      }).then(() => {
-        console.log("Order transmitted to Google Sheet.");
-      }).catch(err => {
-        console.error("Order transmission error:", err);
-      }).finally(() => {
-        submitBtn.innerText = originalText;
-        submitBtn.disabled = false;
-
-        // 2. Save locally and show summary
-        saveOrder(newOrder);
-        populateSummary(newOrder);
-        renderOrderHistory();
-
-        document.getElementById('navOrder').classList.remove('active');
-        document.getElementById('navTrack').classList.add('active');
-        document.getElementById('formSection').classList.add('hidden');
-        document.getElementById('confirmationSection').classList.remove('hidden');
-
-        document.getElementById('notes').value = '';
-        document.getElementById('sheetUrl').value = '';
-        document.getElementById('excelFile').value = '';
-      });
+      // Open UPI QR Modal for payment verification
+      openPaymentModal(orderData);
     });
 
     calcPrice();
