@@ -110,7 +110,8 @@
     .price-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
     .price-value { font-size: 24px; font-weight: 800; color: #34d399; }
     .submit-btn { width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: background 0.2s; }
-    .submit-btn:active { background: #1d4ed8; }
+    .submit-btn:hover { background: #1d4ed8; }
+    .submit-btn:disabled { background: #475569; cursor: not-allowed; }
 
     /* Order Tracker Visual Bar */
     .status-tracker {
@@ -440,7 +441,7 @@
       <div id="confirmationSection" class="hidden" style="text-align: center;">
         <div class="success-badge">✓</div>
         <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Request Placed!</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully save ho gaya hai.</p>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully Google Sheet me record ho gaya hai.</p>
 
         <!-- Live Progress Status -->
         <div class="status-tracker">
@@ -584,10 +585,12 @@
   <script>
     let selectedService = 'excel';
     
-    // --- GOOGLE SHEET INTEGRATION ---
+    // --- GOOGLE SHEET CONFIGURATION ---
     const SHEET_ID = "1cpZVywosuMHP_AIbXmgLlGEa-vT-XIauwe5I3cH8fvI";
     const SHEET_API_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIvk5ot3H8N2TUfUteCrc31YCReC3w-TNa1ieaEMyYvrDTtAEef_WfIB0Nxn0cfYUa/exec";
 
+    // --- LIVE CMS CONTENT FETCHING ---
     function loadLiveContentFromSheet() {
       fetch(SHEET_API_URL)
         .then(res => res.json())
@@ -615,12 +618,11 @@
           });
         })
         .catch(err => {
-          console.warn("Sheet data load fallback:", err);
+          console.warn("Sheet CMS fetch error:", err);
           document.getElementById('live-notice').innerText = "🔥 Fast & Professional Freelance Excel Services";
         });
     }
 
-    // Call live load on start
     loadLiveContentFromSheet();
 
     /* --- AUTH CHECK HELPER --- */
@@ -849,7 +851,7 @@
       return cost;
     }
 
-    /* --- LEAD FORM SUBMISSION --- */
+    /* --- LEAD FORM SUBMISSION (SEND TO GOOGLE SHEETS) --- */
     document.getElementById('leadForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -858,6 +860,11 @@
         openLoginModal();
         return;
       }
+
+      const submitBtn = document.getElementById('submitBtnText');
+      const originalText = submitBtn.innerText;
+      submitBtn.innerText = "Submitting Order...";
+      submitBtn.disabled = true;
 
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
@@ -886,18 +893,34 @@
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       };
 
-      saveOrder(newOrder);
-      populateSummary(newOrder);
-      renderOrderHistory();
+      // 1. Send Order directly to Google Sheets via Apps Script
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newOrder)
+      }).then(() => {
+        console.log("Order transmitted to Google Sheet.");
+      }).catch(err => {
+        console.error("Order transmission error:", err);
+      }).finally(() => {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
 
-      document.getElementById('navOrder').classList.remove('active');
-      document.getElementById('navTrack').classList.add('active');
-      document.getElementById('formSection').classList.add('hidden');
-      document.getElementById('confirmationSection').classList.remove('hidden');
+        // 2. Save locally and show summary
+        saveOrder(newOrder);
+        populateSummary(newOrder);
+        renderOrderHistory();
 
-      document.getElementById('notes').value = '';
-      document.getElementById('sheetUrl').value = '';
-      document.getElementById('excelFile').value = '';
+        document.getElementById('navOrder').classList.remove('active');
+        document.getElementById('navTrack').classList.add('active');
+        document.getElementById('formSection').classList.add('hidden');
+        document.getElementById('confirmationSection').classList.remove('hidden');
+
+        document.getElementById('notes').value = '';
+        document.getElementById('sheetUrl').value = '';
+        document.getElementById('excelFile').value = '';
+      });
     });
 
     calcPrice();
