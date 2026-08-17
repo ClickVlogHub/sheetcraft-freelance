@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="site-title-tag">Spreadsheet Freelance Portal</title>
   
+  <!-- Browser Tab Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+
   <!-- Lottie Player for Animated Login Avatar -->
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
@@ -43,7 +46,14 @@
       color: #38bdf8;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+    }
+    .brand-logo-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     .nav-links {
       display: flex;
@@ -387,7 +397,7 @@
   <!-- Top Navigation Header -->
   <nav class="navbar">
     <div class="nav-brand">
-      <span>📊</span>
+      <img src="logo.png" alt="Spreadsheet Pro Logo" class="brand-logo-img">
       <span id="nav-brand-title">Spreadsheet Pro</span>
     </div>
     <div class="nav-links">
