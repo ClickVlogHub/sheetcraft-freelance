@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spreadsheet Freelance Portal</title>
+  <title id="site-title-tag">Spreadsheet Freelance Portal</title>
   
   <!-- Lottie Player for Animated Login Avatar -->
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
@@ -12,6 +12,18 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: #0b1120; color: #f8fafc; padding: 0 0 40px 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
     
+    /* Live Top Notice Banner */
+    .notice-bar {
+      width: 100%;
+      background: linear-gradient(90deg, #1e3a8a, #2563eb);
+      color: #f8fafc;
+      font-size: 13px;
+      padding: 8px 16px;
+      text-align: center;
+      font-weight: 600;
+      border-bottom: 1px solid #3b82f6;
+    }
+
     /* Top Navigation Bar */
     .navbar {
       width: 100%;
@@ -153,7 +165,7 @@
       color: #f8fafc;
     }
 
-    /* Success / Summary Dashboard Screen */
+    /* Success Dashboard Screen */
     .success-badge { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 28px; border-radius: 50%; margin-bottom: 12px; }
     .summary-card { background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 18px; margin: 16px 0; text-align: left; }
     .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
@@ -185,7 +197,7 @@
       font-weight: normal;
     }
 
-    /* Modal Backdrop and Card */
+    /* Modal Backdrop */
     .login-modal-backdrop {
       position: fixed;
       top: 0;
@@ -329,16 +341,20 @@
 </head>
 <body>
 
+  <!-- Dynamic Live Notice Bar from Sheet -->
+  <div class="notice-bar" id="live-notice">
+    ⚡ Loading offers from sheet...
+  </div>
+
   <!-- Top Navigation Header -->
   <nav class="navbar">
     <div class="nav-brand">
       <span>📊</span>
-      <span>Spreadsheet Pro</span>
+      <span id="nav-brand-title">Spreadsheet Pro</span>
     </div>
     <div class="nav-links">
       <button class="nav-item active" id="navOrder" onclick="switchNav('order')">New Request</button>
       <button class="nav-item" id="navTrack" onclick="switchNav('track')">My Orders</button>
-      <!-- Login & User Button -->
       <button class="nav-login-btn" id="open-login-btn" onclick="openLoginModal()">Login</button>
       <div id="user-button" style="display: none;"></div>
     </div>
@@ -350,8 +366,8 @@
       <!-- 1. Booking Form Section -->
       <div id="formSection">
         <div class="header">
-          <h1>📊 Spreadsheet Consultant</h1>
-          <p>Excel & Google Sheets Freelance Services</p>
+          <h1 id="hero-heading">📊 Spreadsheet Consultant</h1>
+          <p id="hero-subheading">Excel & Google Sheets Freelance Services</p>
         </div>
 
         <form id="leadForm">
@@ -416,7 +432,7 @@
             <div style="font-size: 11px; color: #64748b; text-align: right;">Instant Web<br>Confirmation</div>
           </div>
 
-          <button type="submit" class="submit-btn">Confirm & Submit Request</button>
+          <button type="submit" class="submit-btn" id="submitBtnText">Confirm & Submit Request</button>
         </form>
       </div>
 
@@ -424,7 +440,7 @@
       <div id="confirmationSection" class="hidden" style="text-align: center;">
         <div class="success-badge">✓</div>
         <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Request Placed!</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully browser me save ho gaya hai.</p>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order successfully save ho gaya hai.</p>
 
         <!-- Live Progress Status -->
         <div class="status-tracker">
@@ -485,20 +501,19 @@
     </div>
   </div>
 
-  <!-- Animated Login & Sign-Up Modal -->
+  <!-- Animated Login Modal -->
   <div class="login-modal-backdrop" id="login-modal">
     <div class="login-modal-card">
       <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
       
-      <!-- 3D Animation -->
       <div class="animation-box">
         <lottie-player 
           id="login-lottie-player"
           src="https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json" 
           background="transparent" 
           speed="1" 
-          loop
-          autoplay
+          loop 
+          autoplay 
           style="width: 110px; height: 110px;">
         </lottie-player>
       </div>
@@ -506,13 +521,11 @@
       <h2 id="modal-heading" style="font-size: 1.3rem; margin-bottom: 2px;">Welcome Back</h2>
       <p id="modal-subtext" style="color: #94a3b8; font-size: 12px;">Sign in to place and track your orders</p>
 
-      <!-- Toggle Login vs Sign-Up -->
       <div class="auth-tabs">
         <button class="auth-tab-btn active" id="modalTabLogin" onclick="setAuthTab('login')">Login</button>
         <button class="auth-tab-btn" id="modalTabSignup" onclick="setAuthTab('signup')">Sign Up</button>
       </div>
 
-      <!-- Login Form -->
       <form id="modalLoginForm" onsubmit="handleAuthSubmit(event, 'login')">
         <div class="auth-input-group">
           <input type="email" placeholder="Email Address" required />
@@ -523,7 +536,6 @@
         <button type="submit" class="auth-submit-btn">Login Karein</button>
       </form>
 
-      <!-- Sign Up Form -->
       <form id="modalSignupForm" class="hidden" onsubmit="handleAuthSubmit(event, 'signup')">
         <div class="auth-input-group">
           <input type="text" placeholder="Full Name" required />
@@ -541,7 +553,6 @@
         <span>YA PHIR</span>
       </div>
 
-      <!-- Social Logins -->
       <button class="social-btn btn-google" onclick="triggerOAuth('google')">
         <svg style="width:16px;height:16px;" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -572,6 +583,45 @@
 
   <script>
     let selectedService = 'excel';
+    
+    // --- GOOGLE SHEET INTEGRATION ---
+    const SHEET_ID = "1cpZVywosuMHP_AIbXmgLlGEa-vT-XIauwe5I3cH8fvI";
+    const SHEET_API_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
+
+    function loadLiveContentFromSheet() {
+      fetch(SHEET_API_URL)
+        .then(res => res.json())
+        .then(rows => {
+          rows.forEach(item => {
+            const key = item.Key ? item.Key.trim() : '';
+            const val = item.Value ? item.Value.trim() : '';
+
+            if (key === 'site_title') {
+              document.getElementById('site-title-tag').innerText = val;
+              document.getElementById('nav-brand-title').innerText = val;
+            }
+            if (key === 'notice') {
+              document.getElementById('live-notice').innerText = val;
+            }
+            if (key === 'heading') {
+              document.getElementById('hero-heading').innerText = val;
+            }
+            if (key === 'subheading') {
+              document.getElementById('hero-subheading').innerText = val;
+            }
+            if (key === 'button_text') {
+              document.getElementById('submitBtnText').innerText = val;
+            }
+          });
+        })
+        .catch(err => {
+          console.warn("Sheet data load fallback:", err);
+          document.getElementById('live-notice').innerText = "🔥 Fast & Professional Freelance Excel Services";
+        });
+    }
+
+    // Call live load on start
+    loadLiveContentFromSheet();
 
     /* --- AUTH CHECK HELPER --- */
     function isUserLoggedIn() {
@@ -605,7 +655,6 @@
         document.getElementById('formSection').classList.add('hidden');
         document.getElementById('confirmationSection').classList.remove('hidden');
 
-        // Populate with latest order
         populateSummary(orders[orders.length - 1]);
         renderOrderHistory();
       }
@@ -742,7 +791,6 @@
         }
         closeLoginModal();
 
-        // Autofill user details in form if empty
         if (window.Clerk.user.fullName && !document.getElementById('name').value) {
           document.getElementById('name').value = window.Clerk.user.fullName;
         }
@@ -801,11 +849,10 @@
       return cost;
     }
 
-    /* --- LEAD FORM SUBMISSION (DIRECT CONFIRMATION) --- */
+    /* --- LEAD FORM SUBMISSION --- */
     document.getElementById('leadForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
-      // Gate: Check if user is logged in before placing order
       if (!isUserLoggedIn()) {
         alert('Order submit karne ke liye pehle Login ya Sign Up karein!');
         openLoginModal();
@@ -839,10 +886,7 @@
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       };
 
-      // Save order to browser storage
       saveOrder(newOrder);
-
-      // Display directly on page without external redirection
       populateSummary(newOrder);
       renderOrderHistory();
 
@@ -851,7 +895,6 @@
       document.getElementById('formSection').classList.add('hidden');
       document.getElementById('confirmationSection').classList.remove('hidden');
 
-      // Reset form fields for subsequent requests
       document.getElementById('notes').value = '';
       document.getElementById('sheetUrl').value = '';
       document.getElementById('excelFile').value = '';
