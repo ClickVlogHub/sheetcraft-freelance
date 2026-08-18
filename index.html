@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KLVCEZDYSX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-KLVCEZDYSX');
+  </script>
+
   <title id="site-title-tag">Spreadsheet Freelance Portal</title>
   
   <!-- Browser Tab Favicon -->
@@ -671,10 +682,10 @@
     let selectedService = 'excel';
     let pendingOrderData = null;
     
-    // --- UPI CONFIGURATION (Yahan apna real UPI ID aur Name dalein) ---
+    // --- UPI CONFIGURATION (Apna real UPI ID yahan dalein) ---
     const UPI_CONFIG = {
-      vpa: "yourname@oksbi",              // <-- Apna UPI ID dalein (e.g. 9876543210@paytm)
-      payeeName: "Spreadsheet Consultant" // <-- Name jo scan karne par dikhega
+      vpa: "yourname@oksbi",              // <-- Apna UPI ID dalein
+      payeeName: "Spreadsheet Consultant" // <-- UPI apps par dikhne wala payee name
     };
 
     // --- GOOGLE SHEET CONFIGURATION ---
@@ -915,7 +926,11 @@
     const loginModal = document.getElementById('login-modal');
 
     function openLoginModal() {
-      loginModal.classList.add('active');
+      if (window.Clerk && typeof window.Clerk.openSignIn === 'function') {
+        window.Clerk.openSignIn();
+      } else {
+        loginModal.classList.add('active');
+      }
     }
 
     function closeLoginModal() {
@@ -952,18 +967,10 @@
     }
 
     async function triggerOAuth(provider) {
-      if (!window.Clerk) {
-        alert('Authentication service load ho rahi hai...');
-        return;
-      }
-      try {
-        await window.Clerk.client.signIn.authenticateWithRedirect({
-          strategy: `oauth_${provider}`,
-          redirectUrl: window.location.href,
-          redirectUrlComplete: window.location.href,
-        });
-      } catch (e) {
+      if (window.Clerk) {
         window.Clerk.openSignIn();
+      } else {
+        alert('Authentication service load ho rahi hai...');
       }
     }
 
