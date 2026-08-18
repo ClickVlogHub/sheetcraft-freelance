@@ -480,7 +480,7 @@
             <div style="font-size: 11px; color: #64748b; text-align: right;">UPI Secured<br>Direct Order</div>
           </div>
 
-          <button type="submit" class="submit-btn" id="submitBtnText">Proceed to UPI Payment</button>
+          <button type="submit" class="submit-btn" id="submitBtnText">Proceed to Payment</button>
         </form>
       </div>
 
@@ -488,7 +488,7 @@
       <div id="confirmationSection" class="hidden" style="text-align: center;">
         <div class="success-badge">✓</div>
         <h2 style="font-size: 22px; font-weight: 800; color: #ffffff;">Order Placed Successfully!</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order Google Sheet me record ho chuka hai.</p>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Aapka order record ho chuka hai.</p>
 
         <!-- Live Dynamic Progress Status Tracker -->
         <div class="status-tracker" id="liveStatusTracker">
@@ -669,12 +669,12 @@
 
   <script>
     let selectedService = 'excel';
-    let pendingOrderData = null; // Holds order temporary until payment confirmation
+    let pendingOrderData = null;
     
-    // --- UPI CONFIGURATION (Apna UPI ID yahan dalein) ---
+    // --- UPI CONFIGURATION (Yahan apna real UPI ID aur Name dalein) ---
     const UPI_CONFIG = {
-      vpa: "yourname@oksbi",              // <-- Replace with your real UPI ID
-      payeeName: "Spreadsheet Consultant" // <-- Name shown on UPI apps
+      vpa: "yourname@oksbi",              // <-- Apna UPI ID dalein (e.g. 9876543210@paytm)
+      payeeName: "Spreadsheet Consultant" // <-- Name jo scan karne par dikhega
     };
 
     // --- GOOGLE SHEET CONFIGURATION ---
@@ -703,9 +703,6 @@
             }
             if (key === 'subheading') {
               document.getElementById('hero-subheading').innerText = val;
-            }
-            if (key === 'button_text') {
-              document.getElementById('submitBtnText').innerText = val;
             }
           });
         })
@@ -850,7 +847,7 @@
       }
     }
 
-    /* --- PAYMENT MODAL & UPI LOGIC --- */
+    /* --- PAYMENT MODAL & DYNAMIC UPI QR LOGIC --- */
     function openPaymentModal(order) {
       pendingOrderData = order;
       
@@ -882,11 +879,9 @@
       confirmBtn.innerText = "Transmitting to Sheet...";
       confirmBtn.disabled = true;
 
-      // Attach UTR and initial status
       pendingOrderData.utr = utr;
       pendingOrderData.status = "Received";
 
-      // Send to Google Apps Script
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -901,7 +896,6 @@
         confirmBtn.disabled = false;
         closePaymentModal();
 
-        // Save order locally and switch to tracking dashboard
         saveOrder(pendingOrderData);
         populateSummary(pendingOrderData);
         renderOrderHistory();
@@ -1061,7 +1055,7 @@
       return cost;
     }
 
-    /* --- LEAD FORM SUBMISSION (TRIGGER PAYMENT QR) --- */
+    /* --- LEAD FORM SUBMISSION (OPENS PAYMENT QR MODAL) --- */
     document.getElementById('leadForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -1098,7 +1092,7 @@
         date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       };
 
-      // Open UPI QR Modal for payment verification
+      // Open Dynamic Payment QR Modal
       openPaymentModal(orderData);
     });
 
